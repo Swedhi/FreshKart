@@ -1,0 +1,43 @@
+# ===========================
+# Frontend
+# ===========================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.DS_Store
+
+# ===========================
+# Backend
+# ===========================
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.idea/
+backend/*.iml
+backend/.env
+
+# ===========================
+# IDE
+# ===========================
+.vscode/
+.idea/
+*.iml
+
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+Thumbs.db
+
+# ===========================
+# Logs
+# ===========================
+*.log
+
+# ===========================
+# Temporary
+# ===========================
+*.tmp
+*.swp

@@ -1,0 +1,48 @@
+import axios from "axios";
+
+const API =
+  "http://localhost:8080/api/products";
+
+export const getAllProducts = async () => {
+
+  const response =
+    await axios.get(API);
+
+  return response.data;
+};
+
+export const getProductById = async (
+  id
+) => {
+
+  const response =
+    await axios.get(
+      `${API}/${id}`
+    );
+
+  return response.data;
+};
+
+export const getFeaturedProducts =
+  async () => {
+
+    const response =
+      await axios.get(API);
+
+    return response.data.slice(
+      0,
+      8
+    );
+  };
+
+export const getRelatedProducts =
+  async (id) => {
+
+    const response =
+      await axios.get(API);
+
+    return response.data.filter(
+      (p) =>
+        p.id !== Number(id)
+    );
+  };
