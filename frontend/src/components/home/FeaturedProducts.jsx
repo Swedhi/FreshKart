@@ -3,7 +3,8 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { getFeaturedProducts } from "../../api/productApi";
-import { useCart } from "../../context/CartContext";
+import { addCartItem } from "../../api/cartApi";
+import { getUserId } from "../../utils/auth";
 import { useWishlist } from "../../context/WishlistContext";
 import { getProductImage } from "../../utils/productImages";
 
@@ -13,7 +14,38 @@ export default function FeaturedProducts() {
 
   const navigate = useNavigate();
 
-  const { addToCart } = useCart();
+  const handleAddToCart = async (productId) => {
+
+  const userId = getUserId();
+
+  if (!userId) {
+    alert("Please login first.");
+    navigate("/login");
+    return;
+  }
+
+  try {
+
+    await addCartItem(
+      userId,
+      productId,
+      1
+    );
+
+    alert("Product added to cart!");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Unable to add product."
+    );
+
+  }
+
+};
 
   const {
     toggleWishlist,
@@ -200,9 +232,7 @@ export default function FeaturedProducts() {
                 </div>
 
                 <button
-                  onClick={() =>
-                    addToCart(product)
-                  }
+                  onClick={() => handleAddToCart(product.id)}
                   className="
                     flex
                     items-center

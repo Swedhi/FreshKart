@@ -2,19 +2,60 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, Heart } from "lucide-react";
 
 import { getProductImage } from "../../utils/productImages";
-import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { useCart } from "../../context/CartContext";
+
+import { addCartItem } from "../../api/cartApi";
+import { getUserId } from "../../utils/auth";
 
 export default function ProductCard({ product }) {
 
-  const { addToCart } = useCart();
+  const { loadCart } = useCart();
 
   const {
     toggleWishlist,
     isWishlisted,
   } = useWishlist();
 
+  const handleAddToCart = async () => {
+
+    const userId = getUserId();
+
+    if (!userId) {
+      alert("Please login first.");
+      return;
+    }
+
+    try {
+
+      await addCartItem(
+        userId,
+        product.id,
+        1
+      );
+
+      await loadCart();
+
+      alert("Product added to cart successfully!");
+
+    } catch (err) {
+
+      console.error(err);
+
+      alert(
+        err.response?.data?.message ||
+        "Failed to add product to cart."
+      );
+
+    }
+
+  };
+
   return (
+  <Link
+    to={`/products/${product.id}`}
+    className="block"
+  >
     <div
       className="
         bg-white
@@ -23,11 +64,14 @@ export default function ProductCard({ product }) {
         border-gray-200
         overflow-hidden
         hover:shadow-2xl
-        transition
+        hover:-translate-y-2
+        transition-all
         duration-300
+        cursor-pointer
         group
       "
     >
+      {/* IMAGE */}
       <div className="relative">
 
         <img
@@ -46,9 +90,11 @@ export default function ProductCard({ product }) {
           "
         />
 
+        {/* Wishlist */}
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             toggleWishlist(product);
           }}
           className="
@@ -76,6 +122,7 @@ export default function ProductCard({ product }) {
           />
         </button>
 
+        {/* Fresh Badge */}
         <div
           className="
             absolute
@@ -95,61 +142,37 @@ export default function ProductCard({ product }) {
 
       </div>
 
+      {/* DETAILS */}
       <div className="p-4">
 
-        <h3
-          className="
-            text-lg
-            font-bold
-            text-gray-800
-          "
-        >
+        <h3 className="text-lg font-bold text-gray-800">
           {product.name}
         </h3>
 
-        <p
-          className="
-            text-gray-500
-            text-sm
-            mt-1
-          "
-        >
+        <p className="text-gray-500 text-sm mt-1">
           {product.category}
         </p>
 
-        <div
-          className="
-            flex
-            justify-between
-            items-center
-            mt-4
-          "
-        >
+        <div className="flex justify-between items-center mt-4">
+
           <div>
 
-            <h4
-              className="
-                text-2xl
-                font-bold
-                text-green-700
-              "
-            >
+            <h4 className="text-2xl font-bold text-green-700">
               ₹{product.price}
             </h4>
 
-            <p
-              className="
-                text-xs
-                text-gray-400
-              "
-            >
+            <p className="text-xs text-gray-400">
               Stock: {product.stockQuantity}
             </p>
 
           </div>
 
           <button
-            onClick={() => addToCart(product)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAddToCart();
+            }}
             className="
               flex
               items-center
@@ -169,23 +192,10 @@ export default function ProductCard({ product }) {
 
         </div>
 
-        <Link
-          to={`/products/${product.id}`}
-          className="
-            block
-            mt-4
-            text-center
-            bg-gray-100
-            hover:bg-gray-200
-            py-2
-            rounded-xl
-            font-medium
-          "
-        >
-          View Details
-        </Link>
-
       </div>
+
     </div>
-  );
+  </Link>
+);
+
 }

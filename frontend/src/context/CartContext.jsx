@@ -1,8 +1,17 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
 } from "react";
+
+import {
+  getCart,
+  updateCartQuantity,
+  removeCartItem,
+} from "../api/cartApi";
+
+import { getUserId } from "../utils/auth";
 
 const CartContext = createContext();
 
@@ -10,87 +19,98 @@ export function CartProvider({ children }) {
 
   const [cartItems, setCartItems] = useState([]);
 
-  const addToCart = (product) => {
+  const loadCart = async () => {
 
-    const qty = product.quantity || 1;
+    const userId = getUserId();
 
-    const existing = cartItems.find(
-      (item) => item.id === product.id
-    );
+    if (!userId) {
+      setCartItems([]);
+      return;
+    }
 
-    if (existing) {
+    try {
 
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity:
-                  item.quantity + qty,
-              }
-            : item
-        )
-      );
+      const response = await getCart(userId);
 
-    } else {
+      const items = response.items || [];
 
-      setCartItems([
-        ...cartItems,
-        {
-          ...product,
-          quantity: qty,
-        },
-      ]);
+      setCartItems(items);
+
+    } catch (err) {
+
+      console.error("Load Cart Error", err);
 
     }
 
   };
 
-  const removeFromCart = (id) => {
+  useEffect(() => {
 
-    setCartItems(
-      cartItems.filter(
-        (item) => item.id !== id
-      )
+    loadCart();
+
+  }, []);
+
+  const increaseQuantity = async (item) => {
+
+  try {
+
+    await updateCartQuantity(
+      item.id,
+      item.quantity + 1
     );
 
-  };
+    loadCart();
 
-  const increaseQuantity = (id) => {
+  } catch (err) {
 
-    setCartItems(
-      cartItems.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity:
-                item.quantity + 1,
-            }
-          : item
-      )
-    );
+    console.error(err);
 
-  };
+  }
 
-  const decreaseQuantity = (id) => {
+};
 
-    setCartItems(
-      cartItems
-        .map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                quantity:
-                  item.quantity - 1,
-              }
-            : item
-        )
-        .filter(
-          (item) => item.quantity > 0
-        )
-    );
+const decreaseQuantity = async (item) => {
 
-  };
+  try {
+
+    if (item.quantity <= 1) {
+
+      await removeCartItem(item.id);
+
+    } else {
+
+      await updateCartQuantity(
+        item.id,
+        item.quantity - 1
+      );
+
+    }
+
+    loadCart();
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
+
+};
+
+  const removeFromCart = async (item) => {
+
+  try {
+
+    await removeCartItem(item.id);
+
+    loadCart();
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
+
+};
 
   const clearCart = () => {
 
@@ -99,15 +119,12 @@ export function CartProvider({ children }) {
   };
 
   const totalAmount = cartItems.reduce(
-    (sum, item) =>
-      sum +
-      item.price * item.quantity,
+    (sum, item) => sum + item.subtotal,
     0
   );
 
   const totalItems = cartItems.reduce(
-    (sum, item) =>
-      sum + item.quantity,
+    (sum, item) => sum + item.quantity,
     0
   );
 
@@ -116,10 +133,10 @@ export function CartProvider({ children }) {
     <CartContext.Provider
       value={{
         cartItems,
-        addToCart,
-        removeFromCart,
+        loadCart,
         increaseQuantity,
         decreaseQuantity,
+        removeFromCart,
         clearCart,
         totalAmount,
         totalItems,
@@ -132,5 +149,4 @@ export function CartProvider({ children }) {
 
 }
 
-export const useCart = () =>
-  useContext(CartContext);
+export const useCart = () => useContext(CartContext);

@@ -25,4 +25,8 @@ public class Product {
     private Integer stockQuantity;
 
     private String imageUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vendor_id")
+    private Vendor vendor;
 }

@@ -9,55 +9,38 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173")
 public class CartController {
 
     private final CartService cartService;
 
-    // Add Item
     @PostMapping("/add")
-    public Cart addToCart(
-            @RequestBody Cart cart
-    ) {
+    public Cart addToCart(@RequestBody Cart cart) {
 
-        return cartService.addToCart(
-                cart
-        );
+        System.out.println("============= ADD TO CART =============");
+        System.out.println(cart);
+
+        return cartService.addToCart(cart);
     }
 
-    // Get User Cart With Total
     @GetMapping("/{userId}")
-    public CartResponse getCart(
-            @PathVariable Long userId
-    ) {
-
-        return cartService.getCartWithTotal(
-                userId
-        );
+    public CartResponse getCart(@PathVariable Long userId) {
+        return cartService.getCartWithTotal(userId);
     }
 
-    // Update Quantity
     @PutMapping("/{cartId}")
     public Cart updateQuantity(
             @PathVariable Long cartId,
-            @RequestParam Integer quantity
-    ) {
+            @RequestParam Integer quantity) {
 
-        return cartService.updateQuantity(
-                cartId,
-                quantity
-        );
+        return cartService.updateQuantity(cartId, quantity);
     }
 
-    // Remove Item
     @DeleteMapping("/{cartId}")
-    public String removeItem(
-            @PathVariable Long cartId
-    ) {
+    public String removeItem(@PathVariable Long cartId) {
 
-        cartService.removeItem(
-                cartId
-        );
+        cartService.removeItem(cartId);
 
-        return "Item removed from cart";
+        return "Item removed successfully";
     }
 }

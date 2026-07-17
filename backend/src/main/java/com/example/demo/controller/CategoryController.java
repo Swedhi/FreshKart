@@ -18,13 +18,36 @@ public class CategoryController {
     public Category createCategory(
             @RequestBody Category category
     ) {
-
         return categoryService.create(category);
     }
 
     @GetMapping
     public List<Category> getAllCategories() {
-
         return categoryService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public Category getCategory(
+            @PathVariable Long id
+    ) {
+        return categoryService.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    public Category updateCategory(
+            @PathVariable Long id,
+            @RequestBody Category category
+    ) {
+        return categoryService.update(id, category);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteCategory(
+            @PathVariable Long id
+    ) {
+
+        categoryService.delete(id);
+
+        return "Category deleted successfully";
     }
 }

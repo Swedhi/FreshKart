@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,5 +32,16 @@ public class Order {
             mappedBy = "order",
             cascade = CascadeType.ALL
     )
+    @JsonManagedReference
     private List<OrderItem> orderItems;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private String status = "Pending";
+
+    @Builder.Default
+    private String paymentMethod = "COD";
+
+    @Builder.Default
+    private String paymentStatus = "Pending";
 }

@@ -15,7 +15,6 @@ public class InventoryLogService {
 
     private final InventoryLogRepository inventoryLogRepository;
 
-    // Create Log
     public void createLog(
             Long productId,
             String productName,
@@ -24,40 +23,34 @@ public class InventoryLogService {
             String action
     ) {
 
-        InventoryLog log =
-                InventoryLog.builder()
-                        .productId(productId)
-                        .productName(productName)
-                        .oldStock(oldStock)
-                        .newStock(newStock)
-                        .action(action)
-                        .createdAt(
-                                LocalDateTime.now()
-                        )
-                        .build();
+        InventoryLog log = InventoryLog.builder()
+                .productId(productId)
+                .productName(productName)
+                .oldStock(oldStock)
+                .newStock(newStock)
+                .action(action)
+                .createdAt(LocalDateTime.now())
+                .build();
 
-        inventoryLogRepository.save(
-                log
-        );
+        inventoryLogRepository.save(log);
     }
 
-    // Get All Logs
     public List<InventoryLogResponse> getAllLogs() {
 
         return inventoryLogRepository
-                .findAll()
+                .findAllByOrderByCreatedAtDesc()
                 .stream()
-                .map(log ->
-                        new InventoryLogResponse(
-                                log.getId(),
-                                log.getProductId(),
-                                log.getProductName(),
-                                log.getOldStock(),
-                                log.getNewStock(),
-                                log.getAction(),
-                                log.getCreatedAt()
-                        )
-                )
+                .map(log -> new InventoryLogResponse(
+                        log.getId(),
+                        log.getProductId(),
+                        log.getProductName(),
+                        log.getOldStock(),
+                        log.getNewStock(),
+                        log.getAction(),
+                        log.getCreatedAt()
+                ))
                 .toList();
     }
+    
+
 }

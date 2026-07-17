@@ -1,62 +1,64 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.DashboardStatsResponse;
-import com.example.demo.dto.LowStockProductResponse;
-import com.example.demo.dto.RecentOrderResponse;
-import com.example.demo.dto.RevenueChartResponse;
+import com.example.demo.dto.*;
 import com.example.demo.entity.Order;
-import com.example.demo.repository.FarmRepository;
+import com.example.demo.entity.Product;
+import com.example.demo.entity.User;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.ProductRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.ArrayList;
-import com.example.demo.dto.InventoryAlertResponse;
-import com.example.demo.dto.TopProductResponse;
-import org.springframework.data.domain.PageRequest;
-import com.example.demo.dto.UserProfileResponse;
-import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
 
-    private final FarmRepository farmRepository;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
+    /*
+     * =====================================
+     * Dashboard Statistics
+     * =====================================
+     */
+
     public DashboardStatsResponse getStats() {
 
-    long totalFarms = farmRepository.count();
+        long totalProducts = productRepository.count();
+        long totalOrders = orderRepository.count();
+        long totalUsers = userRepository.count();
 
-    long totalProducts = productRepository.count();
+        double revenue = orderRepository.findAll()
+                .stream()
+                .filter(order -> order.getTotalPrice() != null)
+                .mapToDouble(Order::getTotalPrice)
+                .sum();
 
-    long totalOrders = orderRepository.count();
+        return new DashboardStatsResponse(
+                totalProducts,
+                totalOrders,
+                totalUsers,
+                revenue
+        );
+    }
 
-    double totalRevenue =
-            orderRepository.findAll()
-                    .stream()
-                    .mapToDouble(Order::getTotalPrice)
-                    .sum();
-
-    return new DashboardStatsResponse(
-            totalFarms,
-            totalProducts,
-            totalOrders,
-            totalRevenue
-    );
-}
+    /*
+     * =====================================
+     * Recent Orders
+     * =====================================
+     */
 
     public List<RecentOrderResponse> getRecentOrders() {
 
@@ -65,131 +67,141 @@ public class DashboardService {
                 .stream()
                 .map(order -> new RecentOrderResponse(
                         order.getId(),
-                        order.getUser().getEmail(),
-                        
-                        order.getTotalPrice(),
+                        order.getUser() != null
+                                ? order.getUser().getEmail()
+                                : "Guest",
+                        order.getTotalPrice() != null
+                                ? order.getTotalPrice()
+                                : 0.0,
                         order.getOrderDate()
                 ))
                 .collect(Collectors.toList());
     }
+
+    /*
+     * =====================================
+     * Low Stock Products
+     * =====================================
+     */
+
     public List<LowStockProductResponse> getLowStockProducts() {
 
-    return productRepository
-            .findByStockQuantityLessThan(20)
-            .stream()
-            .map(product -> new LowStockProductResponse(
-                    product.getId(),
-                    product.getName(),
-                    product.getStockQuantity()
-            ))
-            .collect(Collectors.toList());
-}
-public List<RevenueChartResponse> getRevenueChart() {
-
-    List<RevenueChartResponse> response =
-            new ArrayList<>();
-
-    int currentYear =
-            LocalDateTime.now().getYear();
-
-    for (int month = 1; month <= 12; month++) {
-
-        LocalDateTime start =
-                LocalDateTime.of(
-                        currentYear,
-                        month,
-                        1,
-                        0,
-                        0
-                );
-
-        LocalDateTime end =
-                start.plusMonths(1);
-
-        double revenue =
-                orderRepository
-                        .findByOrderDateBetween(
-                                start,
-                                end
-                        )
-                        .stream()
-                        .mapToDouble(
-                                Order::getTotalPrice
-                        )
-                        .sum();
-
-        response.add(
-                new RevenueChartResponse(
-                        Month.of(month)
-                                .name()
-                                .substring(0, 3),
-                        revenue
-                )
-        );
+        return productRepository
+                .findByStockQuantityLessThan(20)
+                .stream()
+                .map(product -> new LowStockProductResponse(
+                        product.getId(),
+                        product.getName(),
+                        product.getStockQuantity()
+                ))
+                .collect(Collectors.toList());
     }
 
-    return response;
-}
-public List<InventoryAlertResponse> getInventoryAlerts() {
+    /*
+     * =====================================
+     * Revenue Chart
+     * =====================================
+     */
 
-    return productRepository
-            .findByStockQuantityLessThanEqual(10)
-            .stream()
-            .map(product ->
-                    new InventoryAlertResponse(
-                            product.getId(),
-                            product.getName(),
-                            product.getStockQuantity(),
-                            "Low stock alert"
+    public List<RevenueChartResponse> getRevenueChart() {
+
+        List<RevenueChartResponse> chart = new ArrayList<>();
+
+        int year = LocalDateTime.now().getYear();
+
+        for (int month = 1; month <= 12; month++) {
+
+            LocalDateTime start = LocalDateTime.of(
+                    year,
+                    month,
+                    1,
+                    0,
+                    0
+            );
+
+            LocalDateTime end = start.plusMonths(1);
+
+            List<Order> orders =
+                    orderRepository.findByOrderDateBetween(start, end);
+
+            double revenue = orders.stream()
+                    .filter(order -> order.getTotalPrice() != null)
+                    .mapToDouble(Order::getTotalPrice)
+                    .sum();
+
+            chart.add(
+                    new RevenueChartResponse(
+                            start.getMonth().name().substring(0, 3),
+                            revenue
                     )
-            )
-            .toList();
-}
-public List<TopProductResponse> getTopProducts() {
+            );
+        }
 
-    return productRepository
-            .findAllByOrderByStockQuantityDesc(
-                    PageRequest.of(0, 5)
-            )
-            .stream()
-            .map(product -> new TopProductResponse(
-                    product.getId(),
-                    product.getName(),
-                    product.getStockQuantity(),
-                    product.getPrice()
-            ))
-            .toList();
-}
-public UserProfileResponse getProfile() {
+        return chart;
+    }
 
-    System.out.println("STEP 1");
+    /*
+     * =====================================
+     * Inventory Alerts
+     * =====================================
+     */
 
-    Authentication authentication =
-            SecurityContextHolder
-                    .getContext()
-                    .getAuthentication();
+    public List<InventoryAlertResponse> getInventoryAlerts() {
 
-    System.out.println("STEP 2");
+        return productRepository
+                .findByStockQuantityLessThanEqual(10)
+                .stream()
+                .map(product -> new InventoryAlertResponse(
+                        product.getId(),
+                        product.getName(),
+                        product.getStockQuantity(),
+                        "Low Stock"
+                ))
+                .collect(Collectors.toList());
+    }
 
-    String email = authentication.getName();
+    /*
+     * =====================================
+     * Top Products
+     * =====================================
+     */
 
-    System.out.println("EMAIL = " + email);
+    public List<TopProductResponse> getTopProducts() {
 
-    User user = userRepository
-            .findByEmail(email)
-            .orElseThrow(() ->
-                    new RuntimeException(
-                            "User not found"
-                    ));
+        return productRepository
+                .findAllByOrderByStockQuantityDesc(PageRequest.of(0, 5))
+                .stream()
+                .map(product -> new TopProductResponse(
+                        product.getId(),
+                        product.getName(),
+                        product.getStockQuantity(),
+                        product.getPrice()
+                ))
+                .collect(Collectors.toList());
+    }
 
-    System.out.println("STEP 3");
+    /*
+     * =====================================
+     * Logged In User Profile
+     * =====================================
+     */
 
-    return new UserProfileResponse(
-            user.getId(),
-            user.getEmail(),
-            user.getCreatedAt()
-    );
-}
+    public UserProfileResponse getProfile() {
 
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
 
+        String email = authentication.getName();
+
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        return new UserProfileResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getCreatedAt()
+        );
+    }
 }

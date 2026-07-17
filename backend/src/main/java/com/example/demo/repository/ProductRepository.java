@@ -28,6 +28,11 @@ public interface ProductRepository
 List<Product> findByCategoryIgnoreCase(
         String category
 );
+List<Product> findByVendor_Id(Long vendorId);
+List<Product> findByStockQuantityLessThan(int stock);
+
+List<Product> findByStockQuantityLessThanEqual(int stock);
+
 
 
 }

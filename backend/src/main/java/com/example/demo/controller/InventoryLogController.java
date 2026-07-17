@@ -16,7 +16,7 @@ public class InventoryLogController {
 
     @GetMapping
     public List<InventoryLogResponse> getAllLogs() {
-
         return inventoryLogService.getAllLogs();
     }
+
 }

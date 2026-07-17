@@ -1,186 +1,150 @@
-import {
-  useEffect,
-  useState
-} from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import Navbar from "../../layouts/Navbar";
-
-import {
-  getOrders
-} from "../../api/orderApi";
-
-import {
-  getUserId
-} from "../../utils/auth";
-
-import {
-  Link
-} from "react-router-dom";
+import { getOrders } from "../../api/orderApi";
+import { getUserId } from "../../utils/auth";
 
 export default function OrdersPage() {
 
-  const [orders,
-    setOrders] =
-    useState([]);
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  const [loading,
-    setLoading] =
-    useState(true);
+    useEffect(() => {
+        loadOrders();
+    }, []);
 
-  useEffect(() => {
+    const loadOrders = async () => {
 
-    loadOrders();
+        try {
 
-  }, []);
+            const userId = getUserId();
 
-  const loadOrders =
-    async () => {
+            const data = await getOrders(userId);
+            console.log("Orders API:", data);
 
-      try {
+            console.log("Orders Response:", data);
 
-        const userId =
-          getUserId();
+            setOrders(data);
 
-        const data =
-          await getOrders(
-            userId
-          );
+        } catch (error) {
 
-        setOrders(data);
+            console.error(error);
 
-      } catch (error) {
+        } finally {
 
-        console.error(error);
+            setLoading(false);
 
-      } finally {
-
-        setLoading(false);
-
-      }
+        }
 
     };
 
-  return (
+    return (
+        <>
+            <Navbar />
 
-    <>
-      <Navbar />
+            <div className="max-w-6xl mx-auto px-6 py-10">
 
-      <div className="max-w-6xl mx-auto p-8">
+                <h1 className="text-4xl font-bold mb-8">
+                    My Orders
+                </h1>
 
-        <h1 className="text-4xl font-bold mb-8">
-          My Orders
-        </h1>
+                {loading ? (
 
-        {loading ? (
+                    <div className="flex justify-center py-20">
+                        <div className="animate-spin rounded-full h-14 w-14 border-4 border-green-600 border-t-transparent"></div>
+                    </div>
 
-          <div>
-            Loading Orders...
-          </div>
+                ) : orders.length === 0 ? (
 
-        ) : orders.length === 0 ? (
+                    <div className="bg-white rounded-2xl shadow p-12 text-center">
 
-          <div className="bg-white p-8 rounded-2xl border">
+                        <h2 className="text-2xl font-bold mb-2">
+                            No Orders Yet
+                        </h2>
 
-            <h2 className="text-2xl font-bold">
-              No Orders Found
-            </h2>
-
-          </div>
-
-        ) : (
-
-          <div className="space-y-6">
-
-            {orders.map(
-              (order) => (
-
-                <div
-                  key={order.id}
-                  className="
-                    bg-white
-                    border
-                    rounded-2xl
-                    p-6
-                  "
-                >
-
-                  <div className="flex justify-between items-center">
-
-                    <div>
-
-                      <h2 className="text-xl font-bold">
-
-                        Order #
-                        {order.id}
-
-                      </h2>
-
-                      <p className="text-gray-500">
-
-                        {new Date(
-                          order.orderDate
-                        ).toLocaleString()}
-
-                      </p>
+                        <p className="text-gray-500">
+                            Start shopping to place your first order.
+                        </p>
 
                     </div>
 
-                    <span
-                      className="
-                        bg-green-100
-                        text-green-700
-                        px-4
-                        py-2
-                        rounded-full
-                        font-semibold
-                      "
-                    >
-                      Completed
-                    </span>
+                ) : (
 
-                  </div>
+                    <div className="space-y-6">
 
-                  <hr className="my-4" />
+                        {orders.map((order) => (
 
-                  <div className="flex justify-between items-center">
+                            <div
+                                key={order.id}
+                                className="bg-white rounded-2xl shadow border p-6 hover:shadow-lg transition"
+                            >
 
-                    <div>
+                                <div className="flex justify-between items-center">
 
-                      <h3 className="text-2xl font-bold text-green-700">
+                                    <div>
 
-                        ₹
-                        {order.totalPrice}
+                                        <h2 className="text-xl font-bold">
+                                            Order #{order.id}
+                                        </h2>
 
-                      </h3>
+                                        <p className="text-gray-500 mt-1">
+                                            {new Date(order.orderDate).toLocaleString()}
+                                        </p>
+
+                                    </div>
+
+                                    <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full font-semibold">
+                                        Pending
+                                    </span>
+
+                                </div>
+
+                                <hr className="my-5" />
+
+                                <div className="flex items-center justify-between flex-wrap gap-4">
+
+                                    <div>
+
+                                        <p className="text-gray-500">
+                                            Total Amount
+                                        </p>
+
+                                        <h3 className="text-3xl font-bold text-green-600">
+                                            ₹{order.totalPrice}
+                                        </h3>
+
+                                    </div>
+
+                                    <div className="flex gap-3">
+
+                                        <Link
+                                            to={`/orders/${order.id}`}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-semibold"
+                                        >
+                                            View Details
+                                        </Link>
+
+                                        <Link
+                                            to={`/tracking/${order.id}`}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-semibold"
+                                        >
+                                            📦 Track Order
+                                        </Link>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        ))}
 
                     </div>
 
-                    <Link
-                      to={`/orders/${order.id}`}
-                      className="
-                        bg-green-600
-                        text-white
-                        px-5
-                        py-2
-                        rounded-xl
-                      "
-                    >
-                      View Details
-                    </Link>
+                )}
 
-                  </div>
-
-                </div>
-
-              )
-            )}
-
-          </div>
-
-        )}
-
-      </div>
-
-    </>
-  );
+            </div>
+        </>
+    );
 }

@@ -5,6 +5,7 @@ import com.example.demo.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.dto.OrderResponse;
+import com.example.demo.dto.OrderTrackingResponse;
 import com.example.demo.dto.OrderDetailResponse;
 import java.util.List;
 
@@ -91,5 +92,22 @@ getOrderItems(
             .getOrderDetails(
                     orderId
             );
+}
+@PatchMapping("/{id}/status")
+public Order updateStatus(
+        @PathVariable Long id,
+        @RequestParam String status
+) {
+
+    return orderService.updateStatus(id, status);
+
+}
+@GetMapping("/{id}/tracking")
+public OrderTrackingResponse getTracking(
+        @PathVariable Long id
+) {
+
+    return orderService.getTracking(id);
+
 }
 }

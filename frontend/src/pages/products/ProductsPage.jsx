@@ -6,6 +6,7 @@ import {
 
 import Navbar from "../../layouts/Navbar";
 import ProductCard from "../../components/product/ProductCard";
+import { getCategories } from "../../api/categoryApi";
 
 import axios from "axios";
 
@@ -36,19 +37,20 @@ export default function ProductsPage() {
     useState(1);
 
   const productsPerPage = 8;
+  
 
-  const categories = [
-    "All",
-    "Vegetables",
-    "Fruits",
-    "Dairy",
-    "Groceries",
-    "Spices",
-  ];
+  const [categories, setCategories] = useState([
+  {
+    id: 0,
+    name: "All",
+  },
+]);
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+  loadProducts();
+  loadCategories();
+}, []);
+
 
   useEffect(() => {
 
@@ -89,6 +91,21 @@ export default function ProductsPage() {
       }
 
     };
+    const loadCategories = async () => {
+  try {
+    const data = await getCategories();
+
+    setCategories([
+      {
+        id: 0,
+        name: "All",
+      },
+      ...data,
+    ]);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const filteredProducts =
     products.filter(
@@ -179,20 +196,18 @@ export default function ProductsPage() {
               (category) => (
 
                 <button
-                  key={category}
+                  key={category.id}
                   onClick={() => {
 
-                    setSelectedCategory(
-                      category
-                    );
+                    setSelectedCategory(category.name);
 
                     setCurrentPage(1);
 
                     navigate(
-                      category === "All"
-                        ? "/products"
-                        : `/products?category=${category}`
-                    );
+  category.name === "All"
+    ? "/products"
+    : `/products?category=${category.name}`
+);
 
                   }}
                   className={`
@@ -202,13 +217,13 @@ export default function ProductsPage() {
                     font-medium
                     transition
                     ${
-                      selectedCategory === category
+                      selectedCategory === category.name
                         ? "bg-green-600 text-white"
                         : "bg-gray-100 hover:bg-gray-200"
                     }
                   `}
                 >
-                  {category}
+                  {category.name}
                 </button>
 
               )
@@ -218,8 +233,7 @@ export default function ProductsPage() {
 
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {currentProducts.map(
             (product) => (
 

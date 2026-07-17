@@ -28,7 +28,7 @@ export default function Footer() {
             <p className="mt-4 text-gray-300 leading-7">
               Fresh groceries delivered to your doorstep in just
               <span className="font-semibold text-white">
-                {" "}10 minutes.
+                {" "}30 minutes.
               </span>
 
               Shop vegetables, fruits, dairy products, groceries and

@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import CountUp from "react-countup";
 
 export default function HeroSection() {
 
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
+  const [productCount, setProductCount] = useState(0);
+const [customerCount, setCustomerCount] = useState(0);
+const [deliveryTime, setDeliveryTime] = useState(0);
 
   const handleSearch = () => {
 
@@ -28,8 +32,30 @@ export default function HeroSection() {
     }
 
   };
+  useEffect(() => {
+  let p = 0;
+  let c = 0;
+  let d = 0;
+
+  const interval = setInterval(() => {
+    if (p < 30) p++;
+    if (c < 500) c += 10;
+    if (d < 30) d++;
+
+    setProductCount(p);
+    setCustomerCount(c);
+    setDeliveryTime(d);
+
+    if (p >= 30 && c >= 500 && d >= 30) {
+      clearInterval(interval);
+    }
+  }, 40);
+
+  return () => clearInterval(interval);
+}, []);
 
   const quickCategories = [
+    
     "Tomato",
     "Onion",
     "Milk",
@@ -207,45 +233,41 @@ export default function HeroSection() {
 
         {/* STATS */}
 
-        <div
-          className="
-            grid
-            grid-cols-1
-            md:grid-cols-3
-            gap-8
-            mt-16
-          "
-        >
+        {/* STATS */}
 
-          <div>
-            <h3 className="text-4xl font-bold">
-              30+
-            </h3>
-            <p className="text-green-100">
-              Fresh Products
-            </p>
-          </div>
+<div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
 
-          <div>
-            <h3 className="text-4xl font-bold">
-              500+
-            </h3>
-            <p className="text-green-100">
-              Happy Customers
-            </p>
-          </div>
+  <div className="text-center">
+    <h3 className="text-5xl font-extrabold text-white transition-all duration-300">
+      {productCount}+
+    </h3>
 
-          <div>
-            <h3 className="text-4xl font-bold">
-              30 Min
-            </h3>
-            <p className="text-green-100">
-              Average Delivery
-            </p>
-          </div>
+    <p className="text-green-100 mt-2 text-lg">
+      Fresh Products
+    </p>
+  </div>
 
-        </div>
+  <div className="text-center">
+    <h3 className="text-5xl font-extrabold text-white transition-all duration-300">
+      {customerCount}+
+    </h3>
 
+    <p className="text-green-100 mt-2 text-lg">
+      Happy Customers
+    </p>
+  </div>
+
+  <div className="text-center">
+    <h3 className="text-5xl font-extrabold text-white transition-all duration-300">
+      {deliveryTime} Min
+    </h3>
+
+    <p className="text-green-100 mt-2 text-lg">
+      Average Delivery
+    </p>
+  </div>
+
+</div>
       </div>
 
     </section>

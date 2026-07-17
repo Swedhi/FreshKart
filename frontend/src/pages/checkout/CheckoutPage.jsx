@@ -3,12 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 import Navbar from "../../layouts/Navbar";
 
-import { useCart } from "../../context/CartContext";
-
-import { createOrder } from "../../api/orderApi";
-import {
-  getUserId
-} from "../../utils/auth";
+import { checkout } from "../../api/orderApi";
+import { getCart } from "../../api/cartApi";
+import { getUserId } from "../../utils/auth";
+import { createPaymentOrder } from "../../api/paymentApi";
 
 import {
   getAddresses,
@@ -19,161 +17,158 @@ export default function CheckoutPage() {
 
   const navigate = useNavigate();
 
-  const {
-    cartItems,
-    totalAmount,
-  } = useCart();
+  const [cartItems, setCartItems] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
 
-  const [addresses, setAddresses] =
-    useState([]);
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
-  const [selectedAddress,
-    setSelectedAddress] =
-    useState(null);
+  const [showForm, setShowForm] = useState(false);
 
-  const [showForm,
-    setShowForm] =
-    useState(false);
-
-  const [addressForm,
-    setAddressForm] =
-    useState({
-      fullName: "",
-      phoneNumber: "",
-      addressLine: "",
-      city: "",
-      state: "",
-      pincode: "",
-      country: "India",
-    });
+  const [addressForm, setAddressForm] = useState({
+    fullName: "",
+    phoneNumber: "",
+    addressLine: "",
+    city: "",
+    state: "",
+    pincode: "",
+    country: "India",
+  });
 
   useEffect(() => {
+    loadCart();
     loadAddresses();
   }, []);
 
-  const loadAddresses =
-    async () => {
+  const loadCart = async () => {
+    try {
 
-      try {
+      const data = await getCart(getUserId());
 
-        const userId =
-  getUserId();
+      setCartItems(data.items || []);
+      setTotalAmount(data.totalAmount || 0);
 
-        const data =
-          await getAddresses(userId);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-        setAddresses(data);
+  const loadAddresses = async () => {
 
-        if (data.length > 0) {
-          setSelectedAddress(data[0]);
-        }
+    try {
 
-      } catch (error) {
+      const data = await getAddresses(getUserId());
 
-        console.error(
-          "Failed to load addresses",
-          error
-        );
+      setAddresses(data);
 
+      if (data.length > 0) {
+        setSelectedAddress(data[0]);
       }
 
-    };
+    } catch (err) {
+      console.error(err);
+    }
 
-  const handleAddAddress =
-    async () => {
+  };
 
-      try {
+  const handleAddAddress = async () => {
 
-        const newAddress = {
+    try {
 
-          ...addressForm,
+      await addAddress({
+        ...addressForm,
+        user: {
+          id: getUserId(),
+        },
+      });
 
-          user: {
-  id: getUserId(),
-},
+      alert("Address Added");
 
-        };
+      setShowForm(false);
 
-        await addAddress(
-          newAddress
-        );
+      loadAddresses();
 
-        alert(
-          "Address Added Successfully"
-        );
+      setAddressForm({
+        fullName: "",
+        phoneNumber: "",
+        addressLine: "",
+        city: "",
+        state: "",
+        pincode: "",
+        country: "India",
+      });
 
-        setShowForm(false);
+    } catch (err) {
+      console.error(err);
+    }
 
-        setAddressForm({
-          fullName: "",
-          phoneNumber: "",
-          addressLine: "",
-          city: "",
-          state: "",
-          pincode: "",
-          country: "India",
-        });
+  };
 
-        loadAddresses();
+  const handlePlaceOrder = async () => {
 
-      } catch (error) {
+  if (!selectedAddress) {
+    alert("Please select an address");
+    return;
+  }
 
-        console.error(error);
+  try {
 
-      }
+    const payment = await createPaymentOrder(totalAmount);
 
-    };
+    const options = {
 
-  const handlePlaceOrder =
-    async () => {
+      key: payment.key,
 
-      if (!selectedAddress) {
+      amount: payment.amount * 100,
 
-        alert(
-          "Please select an address"
-        );
+      currency: payment.currency,
 
-        return;
+      name: "FreshKart",
 
-      }
+      description: "Fresh Grocery Order",
 
-      try {
+      order_id: payment.orderId,
 
-        const order = {
+      handler: async function () {
 
-          totalAmount,
+        alert("Payment Successful");
 
-          addressId:
-            selectedAddress.id,
-
-          products:
-            cartItems.map(
-              (item) => ({
-                productId: item.id,
-                quantity: item.quantity,
-              })
-            ),
-
-        };
-
-        await createOrder(order);
-
-        alert(
-          "Order Placed Successfully"
-        );
+        await checkout(getUserId());
 
         navigate("/orders");
 
-      } catch (error) {
+      },
 
-        console.error(error);
+      prefill: {
 
-      }
+        name: selectedAddress.fullName,
+
+        contact: selectedAddress.phoneNumber,
+
+      },
+
+      theme: {
+
+        color: "#16a34a",
+
+      },
 
     };
 
-  return (
+    const razorpay = new window.Razorpay(options);
 
+    razorpay.open();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Payment Failed");
+
+  }
+
+};
+  return (
     <>
       <Navbar />
 
@@ -185,11 +180,11 @@ export default function CheckoutPage() {
 
         <div className="grid md:grid-cols-2 gap-8">
 
-          {/* ADDRESS SECTION */}
+          {/* ADDRESS */}
 
           <div>
 
-            <div className="bg-white rounded-2xl border p-6">
+            <div className="bg-white border rounded-2xl p-6">
 
               <div className="flex justify-between items-center mb-6">
 
@@ -198,18 +193,8 @@ export default function CheckoutPage() {
                 </h2>
 
                 <button
-                  onClick={() =>
-                    setShowForm(
-                      !showForm
-                    )
-                  }
-                  className="
-                    bg-green-600
-                    text-white
-                    px-4
-                    py-2
-                    rounded-lg
-                  "
+                  onClick={() => setShowForm(!showForm)}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg"
                 >
                   + Add Address
                 </button>
@@ -221,106 +206,80 @@ export default function CheckoutPage() {
                 <div className="border rounded-xl p-4 mb-6">
 
                   <input
+                    className="border p-2 w-full mb-3"
                     placeholder="Full Name"
-                    value={
-                      addressForm.fullName
-                    }
+                    value={addressForm.fullName}
                     onChange={(e) =>
                       setAddressForm({
                         ...addressForm,
-                        fullName:
-                          e.target.value,
+                        fullName: e.target.value,
                       })
                     }
-                    className="border p-2 w-full mb-3"
                   />
 
                   <input
+                    className="border p-2 w-full mb-3"
                     placeholder="Phone Number"
-                    value={
-                      addressForm.phoneNumber
-                    }
+                    value={addressForm.phoneNumber}
                     onChange={(e) =>
                       setAddressForm({
                         ...addressForm,
-                        phoneNumber:
-                          e.target.value,
+                        phoneNumber: e.target.value,
                       })
                     }
-                    className="border p-2 w-full mb-3"
                   />
 
                   <input
+                    className="border p-2 w-full mb-3"
                     placeholder="Address Line"
-                    value={
-                      addressForm.addressLine
-                    }
+                    value={addressForm.addressLine}
                     onChange={(e) =>
                       setAddressForm({
                         ...addressForm,
-                        addressLine:
-                          e.target.value,
+                        addressLine: e.target.value,
                       })
                     }
-                    className="border p-2 w-full mb-3"
                   />
 
                   <input
+                    className="border p-2 w-full mb-3"
                     placeholder="City"
-                    value={
-                      addressForm.city
-                    }
+                    value={addressForm.city}
                     onChange={(e) =>
                       setAddressForm({
                         ...addressForm,
-                        city:
-                          e.target.value,
+                        city: e.target.value,
                       })
                     }
-                    className="border p-2 w-full mb-3"
                   />
 
                   <input
+                    className="border p-2 w-full mb-3"
                     placeholder="State"
-                    value={
-                      addressForm.state
-                    }
+                    value={addressForm.state}
                     onChange={(e) =>
                       setAddressForm({
                         ...addressForm,
-                        state:
-                          e.target.value,
+                        state: e.target.value,
                       })
                     }
-                    className="border p-2 w-full mb-3"
                   />
 
                   <input
+                    className="border p-2 w-full mb-3"
                     placeholder="Pincode"
-                    value={
-                      addressForm.pincode
-                    }
+                    value={addressForm.pincode}
                     onChange={(e) =>
                       setAddressForm({
                         ...addressForm,
-                        pincode:
-                          e.target.value,
+                        pincode: e.target.value,
                       })
                     }
-                    className="border p-2 w-full mb-3"
                   />
 
                   <button
-                    onClick={
-                      handleAddAddress
-                    }
-                    className="
-                      bg-green-600
-                      text-white
-                      px-4
-                      py-2
-                      rounded-lg
-                    "
+                    onClick={handleAddAddress}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg"
                   >
                     Save Address
                   </button>
@@ -329,57 +288,35 @@ export default function CheckoutPage() {
 
               )}
 
-              {addresses.map(
-                (address) => (
+              {addresses.map((address) => (
 
-                  <div
-                    key={address.id}
-                    onClick={() =>
-                      setSelectedAddress(
-                        address
-                      )
-                    }
-                    className={`
-                      border
-                      rounded-xl
-                      p-4
-                      mb-4
-                      cursor-pointer
-                      ${
-                        selectedAddress?.id ===
-                        address.id
-                          ? "border-green-600 bg-green-50"
-                          : ""
-                      }
-                    `}
-                  >
+                <div
+                  key={address.id}
+                  onClick={() => setSelectedAddress(address)}
+                  className={`border rounded-xl p-4 mb-4 cursor-pointer ${
+                    selectedAddress?.id === address.id
+                      ? "border-green-600 bg-green-50"
+                      : ""
+                  }`}
+                >
 
-                    <h3 className="font-bold">
-                      {address.fullName}
-                    </h3>
+                  <h3 className="font-bold">
+                    {address.fullName}
+                  </h3>
 
-                    <p>
-                      {address.addressLine}
-                    </p>
+                  <p>{address.addressLine}</p>
 
-                    <p>
-                      {address.city},
-                      {" "}
-                      {address.state}
-                    </p>
+                  <p>
+                    {address.city}, {address.state}
+                  </p>
 
-                    <p>
-                      {address.pincode}
-                    </p>
+                  <p>{address.pincode}</p>
 
-                    <p>
-                      {address.phoneNumber}
-                    </p>
+                  <p>{address.phoneNumber}</p>
 
-                  </div>
+                </div>
 
-                )
-              )}
+              ))}
 
             </div>
 
@@ -389,67 +326,44 @@ export default function CheckoutPage() {
 
           <div>
 
-            <div className="bg-white rounded-2xl border p-6">
+            <div className="bg-white border rounded-2xl p-6">
 
               <h2 className="text-2xl font-bold mb-6">
                 Order Summary
               </h2>
 
-              {cartItems.map(
-                (item) => (
+              {cartItems.map((item) => (
 
-                  <div
-                    key={item.id}
-                    className="
-                      flex
-                      justify-between
-                      py-3
-                    "
-                  >
+                <div
+                  key={item.cartId}
+                  className="flex justify-between py-3"
+                >
 
-                    <span>
-                      {item.name}
-                      {" "}×{" "}
-                      {item.quantity}
-                    </span>
+                  <span>
+                    {item.productName} × {item.quantity}
+                  </span>
 
-                    <span>
-                      ₹
-                      {item.price *
-                        item.quantity}
-                    </span>
+                  <span>
+                    ₹{item.subtotal}
+                  </span>
 
-                  </div>
+                </div>
 
-                )
-              )}
+              ))}
 
-              <hr className="my-4" />
+              <hr className="my-4"/>
 
               <div className="flex justify-between text-xl font-bold">
 
                 <span>Total</span>
 
-                <span>
-                  ₹{totalAmount}
-                </span>
+                <span>₹{totalAmount}</span>
 
               </div>
 
               <button
-                onClick={
-                  handlePlaceOrder
-                }
-                className="
-                  mt-8
-                  w-full
-                  bg-green-600
-                  hover:bg-green-700
-                  text-white
-                  py-4
-                  rounded-xl
-                  font-semibold
-                "
+                onClick={handlePlaceOrder}
+                className="mt-8 w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl"
               >
                 Place Order
               </button>
@@ -463,6 +377,6 @@ export default function CheckoutPage() {
       </div>
 
     </>
-
   );
+
 }
