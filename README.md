@@ -203,7 +203,11 @@ GEMINI_API_KEY=YOUR_API_KEY
 - AI Assistant
 
 ---
+## 🎥 Project Demo
 
+▶️ **Watch the Demo Video**
+
+https://drive.google.com/file/d/1-1uTYFt4MHsUwLCeJmx5nhuagYaOcLI4/view?usp=drive_link
 
 ---
 
