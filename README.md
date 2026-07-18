@@ -204,15 +204,6 @@ GEMINI_API_KEY=YOUR_API_KEY
 
 ---
 
-# 📈 Future Improvements
-
-- Email Notifications
-- OTP Authentication
-- Coupon System
-- Real-time Delivery Tracking
-- Multi-Vendor Marketplace
-- Mobile App
-- Recommendation Engine using Machine Learning
 
 ---
 
