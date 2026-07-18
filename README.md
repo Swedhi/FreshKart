@@ -1,52 +1,108 @@
-# 🛒 FreshKart - AI Powered Grocery Delivery Platform
+# 🛒 FreshKart - Smart Grocery Delivery Platform
 
-FreshKart is a full-stack grocery delivery application inspired by Blinkit and Instamart. It provides users with a modern shopping experience while offering administrators tools to manage products, inventory, and orders.
+FreshKart is a full-stack grocery delivery web application built using **Spring Boot**, **React.js**, **PostgreSQL**, and **JWT Authentication**. It enables customers to browse fresh groceries, manage carts, place orders, make online payments, and track deliveries while providing administrators with powerful product and inventory management tools.
 
-## 🚀 Features
+---
 
-### Customer
+# 🚀 Features
 
-* User Registration & Login (JWT Authentication)
-* Browse Products
-* Product Detail Page
-* Search Products
-* Shopping Cart
-* Wishlist
-* Checkout
-* Order History
-* Profile Page
-* Address Management
+## 👤 User Features
 
-### Admin
+- User Registration & Login (JWT Authentication)
+- Browse Products by Categories
+- Search Products
+- Product Details Page
+- Wishlist
+- Shopping Cart
+- Quantity Management
+- Secure Checkout
+- Razorpay Payment Integration
+- Order History
+- Order Tracking
+- Product Reviews & Ratings
+- AI-based Grocery Assistant (Gemini AI)
+- Frequently Bought Together Recommendations
 
-* Dashboard
-* Product Management
-* Inventory Management
-* Order Management
-* Analytics
-* Revenue Dashboard
+---
 
-## 🛠 Tech Stack
+## 🛠 Admin Features
 
-### Frontend
+- Admin Dashboard
+- Product Management
+- Category Management
+- Inventory Management
+- Order Management
+- Customer Management
+- Analytics Dashboard
+- Revenue Statistics
+- Low Stock Alerts
+- Vendor Management
 
-* React
-* Vite
-* Tailwind CSS
-* Axios
-* React Router
-* Lucide Icons
+---
 
-### Backend
+## 🤖 AI Features
 
-* Spring Boot
-* Spring Security
-* JWT Authentication
-* Spring Data JPA
-* Hibernate
-* PostgreSQL
+- Google Gemini AI Integration
+- Smart Grocery Assistant
+- Product Recommendations
+- Grocery Query Support
 
-## 📂 Project Structure
+---
+
+# 🏗 Tech Stack
+
+## Frontend
+
+- React.js
+- React Router DOM
+- Tailwind CSS
+- Axios
+- Lucide React
+- React CountUp
+- React Toastify
+
+---
+
+## Backend
+
+- Spring Boot
+- Spring Security
+- JWT Authentication
+- Spring Data JPA
+- Hibernate
+- Maven
+
+---
+
+## Database
+
+- PostgreSQL
+
+---
+
+## Payment Gateway
+
+- Razorpay
+
+---
+
+## AI
+
+- Google Gemini API
+
+---
+
+## Tools
+
+- Git
+- GitHub
+- Postman
+- IntelliJ IDEA
+- VS Code
+
+---
+
+# 📂 Project Structure
 
 ```
 FreshKart
@@ -54,39 +110,54 @@ FreshKart
 ├── frontend
 │   ├── src
 │   ├── public
-│   └── package.json
+│   ├── package.json
 │
 ├── backend
 │   ├── src
 │   ├── pom.xml
-│   └── application.properties
 │
 └── README.md
 ```
 
-## ⚙️ Installation
+---
 
-### Clone Repository
+# ⚙ Installation
+
+## Clone Repository
 
 ```bash
 git clone https://github.com/Swedhi/FreshKart.git
-cd FreshKart
 ```
 
-### Backend
+---
+
+## Backend
 
 ```bash
 cd backend
+```
+
+Configure PostgreSQL database in
+
+```
+application.properties
+```
+
+Run
+
+```bash
 mvn spring-boot:run
 ```
 
-Backend runs on:
+Backend runs on
 
 ```
 http://localhost:8080
 ```
 
-### Frontend
+---
+
+## Frontend
 
 ```bash
 cd frontend
@@ -94,31 +165,67 @@ npm install
 npm run dev
 ```
 
-Frontend runs on:
+Frontend runs on
 
 ```
 http://localhost:5173
 ```
 
-## 🔐 Authentication
+---
 
-* JWT Based Authentication
-* Secure Login
-* Protected Routes
-* Role Ready Architecture
+# 🔐 Environment Variables
 
-## 📌 Upcoming Features
+Create your own local configuration for API keys.
 
-* Razorpay Integration
-* Admin Product CRUD
-* Order Status Tracking
-* AI Product Recommendation
-* Notifications
-* Coupons
-* Delivery Tracking
+Example:
 
-## 👩‍💻 Developer
+```
+RAZORPAY_KEY_ID=YOUR_KEY
+RAZORPAY_KEY_SECRET=YOUR_SECRET
+GEMINI_API_KEY=YOUR_API_KEY
+```
+
+> Never commit API keys to GitHub.
+
+---
+
+# 📸 Screens
+
+- Home Page
+- Product Listing
+- Product Details
+- Shopping Cart
+- Checkout
+- Order Tracking
+- Wishlist
+- Admin Dashboard
+- Analytics
+- AI Assistant
+
+---
+
+# 📈 Future Improvements
+
+- Email Notifications
+- OTP Authentication
+- Coupon System
+- Real-time Delivery Tracking
+- Multi-Vendor Marketplace
+- Mobile App
+- Recommendation Engine using Machine Learning
+
+---
+
+# 👨‍💻 Developed By
 
 **Sneha Pal**
 
-Built as a full-stack portfolio project using React and Spring Boot.
+GitHub: https://github.com/Swedhi
+
+LinkedIn: https://linkedin.com/in/your-linkedin
+
+---
+
+# 📄 License
+
+This project is developed for educational and portfolio purposes.
