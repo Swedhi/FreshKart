@@ -215,9 +215,9 @@ https://drive.google.com/file/d/1-1uTYFt4MHsUwLCeJmx5nhuagYaOcLI4/view?usp=drive
 
 **Sneha Pal**
 
-GitHub: https://github.com/Swedhi
+GitHub: https://github.com/Swedhi/
 
-LinkedIn: https://linkedin.com/in/your-linkedin
+LinkedIn: https://www.linkedin.com/in/sneha-pal9792/
 
 ---
 
